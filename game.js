@@ -71,35 +71,53 @@ class JupiterPlatform extends Platform {
 // --- p5.js setup (runs once) ---
 
 function loadAssets() {
-  cissiImage = loadImage("images/cissi.png", (img) => {
+  loadImage("images/cissi.png", (img) => {
     cissiImage = img;
     if (character1) character1.imageFile = img;
+  }, () => {
+    console.log("Could not load cissi.png");
   });
 
-  logoImage = loadImage("images/logo.png", (img) => {
+  loadImage("images/logo.png", (img) => {
     logoImage = img;
+  }, () => {
+    console.log("Could not load logo.png");
   });
 
-  posterImage = loadImage("images/poster.jpeg", (img) => {
+  loadImage("images/poster.jpeg", (img) => {
     posterImage = img;
+  }, () => {
+    console.log("Could not load poster.jpeg");
   });
 
   landImages = [];
-  loadImage("images/1.png", (img) => landImages[0] = img);
-  loadImage("images/2.png", (img) => landImages[1] = img);
-  loadImage("images/3.png", (img) => landImages[2] = img);
+  loadImage("images/1.png", (img) => landImages[0] = img, () => {
+    console.log("Could not load 1.png");
+  });
+  loadImage("images/2.png", (img) => landImages[1] = img, () => {
+    console.log("Could not load 2.png");
+  });
+  loadImage("images/3.png", (img) => landImages[2] = img, () => {
+    console.log("Could not load 3.png");
+  });
 
-  planetImages.moon = loadImage("images/月球.png", (img) => {
+  loadImage("images/月球.png", (img) => {
     planetImages.moon = img;
     refreshPlatformImages();
+  }, () => {
+    console.log("Could not load 月球.png");
   });
-  planetImages.mars = loadImage("images/火星.png", (img) => {
+  loadImage("images/火星.png", (img) => {
     planetImages.mars = img;
     refreshPlatformImages();
+  }, () => {
+    console.log("Could not load 火星.png");
   });
-  planetImages.jupiter = loadImage("images/木星.png", (img) => {
+  loadImage("images/木星.png", (img) => {
     planetImages.jupiter = img;
     refreshPlatformImages();
+  }, () => {
+    console.log("Could not load 木星.png");
   });
 }
 
@@ -139,7 +157,7 @@ function draw() {
 
 // animated cover background, drawn with p5 instead of video
 function drawStartBackground() {
-  if (posterImage) {
+  if (posterImage && posterImage.width > 1) {
     imageMode(CORNER);
     image(posterImage, 0, 0, width, height);
     fill(0, 0, 0, 70);
@@ -313,7 +331,7 @@ function drawLandCharacters() {
 
   imageMode(CENTER);
   for (let i = 0; i < landImages.length; i++) {
-    if (landImages[i]) {
+    if (landImages[i] && landImages[i].width > 1) {
       image(landImages[i], spots[i].x, spots[i].y, spots[i].size, spots[i].size);
     }
   }
@@ -404,7 +422,7 @@ function resetGame() {
 // title screen before game starts
 function showStartScreen() {
   textAlign(CENTER, CENTER);
-  if (logoImage) {
+  if (logoImage && logoImage.width > 1) {
     imageMode(CENTER);
     image(logoImage, width / 2, height / 2 - 125, 250, 130);
   } else {
@@ -485,7 +503,7 @@ function drawSpaceship(x, y) {
 
 // place Cissi on top of the spaceship for the ending
 function drawCissiOnShip(x, y) {
-  if (cissiImage) {
+  if (cissiImage && cissiImage.width > 1) {
     imageMode(CENTER);
     image(cissiImage, x, y, 58, 70);
   } else {
