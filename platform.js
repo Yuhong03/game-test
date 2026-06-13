@@ -14,7 +14,7 @@ export default class Platform {
     let centerX = this.x + this.w / 2;
     let centerY = this.y + this.h / 2;
 
-    if (this.imageFile) {
+    if (this.imageFile && this.imageFile.width > 1) {
       imageMode(CENTER);
       image(this.imageFile, centerX, centerY, this.w + 14, this.w + 14);
       return;
