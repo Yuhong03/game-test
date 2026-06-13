@@ -36,7 +36,7 @@ export default class Character {
   draw() {
     let centerX = this.x + this.w / 2;
 
-    if (this.imageFile) {
+    if (this.imageFile && this.imageFile.width > 1) {
       imageMode(CORNER);
       image(this.imageFile, this.x - 8, this.y - 14, this.w + 16, this.h + 22);
       fill(255, 230, 80);
