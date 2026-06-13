@@ -70,24 +70,44 @@ class JupiterPlatform extends Platform {
 
 // --- p5.js setup (runs once) ---
 
-function preload() {
-  cissiImage = loadImage("images/cissi.png");
-  logoImage = loadImage("images/logo.png");
-  posterImage = loadImage("images/poster.jpeg");
-  landImages = [
-    loadImage("images/1.png"),
-    loadImage("images/2.png"),
-    loadImage("images/3.png")
-  ];
-  planetImages.moon = loadImage("images/月球.png");
-  planetImages.mars = loadImage("images/火星.png");
-  planetImages.jupiter = loadImage("images/木星.png");
+function loadAssets() {
+  cissiImage = loadImage("images/cissi.png", (img) => {
+    cissiImage = img;
+    if (character1) character1.imageFile = img;
+  });
+
+  logoImage = loadImage("images/logo.png", (img) => {
+    logoImage = img;
+  });
+
+  posterImage = loadImage("images/poster.jpeg", (img) => {
+    posterImage = img;
+  });
+
+  landImages = [];
+  loadImage("images/1.png", (img) => landImages[0] = img);
+  loadImage("images/2.png", (img) => landImages[1] = img);
+  loadImage("images/3.png", (img) => landImages[2] = img);
+
+  planetImages.moon = loadImage("images/月球.png", (img) => {
+    planetImages.moon = img;
+    refreshPlatformImages();
+  });
+  planetImages.mars = loadImage("images/火星.png", (img) => {
+    planetImages.mars = img;
+    refreshPlatformImages();
+  });
+  planetImages.jupiter = loadImage("images/木星.png", (img) => {
+    planetImages.jupiter = img;
+    refreshPlatformImages();
+  });
 }
 
 function setup() {
   createCanvas(canvasWidth, canvasHeight);
   frameRate(60);
   character1 = new Character(185, 450, 30, 30, cissiImage);
+  loadAssets();
 }
 
 // --- p5.js draw (runs every frame) ---
@@ -325,6 +345,19 @@ function respawnIfOffScreen() {
   }
 }
 
+// update platforms if images finish loading after a game starts
+function refreshPlatformImages() {
+  for (let i = 0; i < moonPlatforms.length; i++) {
+    moonPlatforms[i].imageFile = planetImages.moon;
+  }
+  for (let i = 0; i < marsPlatforms.length; i++) {
+    marsPlatforms[i].imageFile = planetImages.mars;
+  }
+  for (let i = 0; i < jupiterPlatforms.length; i++) {
+    jupiterPlatforms[i].imageFile = planetImages.jupiter;
+  }
+}
+
 // set up a new game — clear arrays and spawn platforms
 function resetGame() {
   score = 0;
@@ -485,6 +518,5 @@ function mousePressed() {
 // ES modules hide functions from global scope — p5 looks for these on window
 window.setup = setup;
 window.draw = draw;
-window.preload = preload;
 window.keyPressed = keyPressed;
 window.mousePressed = mousePressed;
