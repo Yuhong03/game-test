@@ -5,4 +5,15 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
+    background: #05071a;
+    overflow: hidden;
+    touch-action: none;
+    overscroll-behavior: none;
+}
+
+canvas {
+    width: min(100vw, 400px) !important;
+    height: auto !important;
+    max-height: 100vh;
+    touch-action: none;
 }
