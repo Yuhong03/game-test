@@ -7,7 +7,6 @@ export default class Character {
     this.h = h;
     this.vx = 0; // horizontal speed
     this.vy = 0; // vertical speed
-    this.name = "Cissi"; // player name
     this.imageFile = imageFile; // optional image file
   }
 
@@ -32,19 +31,15 @@ export default class Character {
     this.vy = power;
   }
 
-  // draw Cissi with image first, fallback to simple space hero
+  // draw player with image first, fallback to simple space hero
   draw() {
-    let centerX = this.x + this.w / 2;
-
     if (this.imageFile && this.imageFile.width > 1) {
       imageMode(CORNER);
       image(this.imageFile, this.x - 8, this.y - 14, this.w + 16, this.h + 22);
-      fill(255, 230, 80);
-      textAlign(CENTER, BOTTOM);
-      textSize(10);
-      text(this.name, centerX, this.y - 16);
       return;
     }
+
+    let centerX = this.x + this.w / 2;
 
     noStroke(); // no outline
 
@@ -72,10 +67,6 @@ export default class Character {
     line(this.x + this.w - 3, this.y + 13, this.x + this.w + 10, this.y + 2);
     noStroke();
 
-    fill(80, 40, 90); // name label
-    textAlign(CENTER, BOTTOM);
-    textSize(10);
-    text(this.name, centerX, this.y - 3);
   }
 
   // loop through a platform array and return the first landed platform
