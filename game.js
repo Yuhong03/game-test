@@ -123,10 +123,11 @@ function loadAssets() {
 }
 
 function setup() {
-  createCanvas(canvasWidth, canvasHeight);
+  let gameCanvas = createCanvas(canvasWidth, canvasHeight);
   frameRate(60);
   character1 = new Character(185, 450, 30, 30, playerImage);
   loadAssets();
+  setupMobileControls(gameCanvas);
 }
 
 // --- p5.js draw (runs every frame) ---
@@ -543,6 +544,62 @@ function updateTouchDirection() {
   }
 
   touchDirection = touches[0].x < width / 2 ? -1 : 1;
+}
+
+function setupMobileControls(gameCanvas) {
+  let canvasElement = gameCanvas.elt;
+
+  canvasElement.addEventListener("touchstart", handleNativeTouch, { passive: false });
+  canvasElement.addEventListener("touchmove", handleNativeTouch, { passive: false });
+  canvasElement.addEventListener("touchend", handleNativeTouchEnd, { passive: false });
+  canvasElement.addEventListener("touchcancel", handleNativeTouchEnd, { passive: false });
+
+  canvasElement.addEventListener("pointerdown", handleNativePointer, { passive: false });
+  canvasElement.addEventListener("pointermove", handleNativePointer, { passive: false });
+  canvasElement.addEventListener("pointerup", handleNativePointerEnd, { passive: false });
+  canvasElement.addEventListener("pointercancel", handleNativePointerEnd, { passive: false });
+}
+
+function setTouchDirectionFromClientX(clientX) {
+  let canvasBox = document.querySelector("canvas").getBoundingClientRect();
+  let xOnCanvas = clientX - canvasBox.left;
+  touchDirection = xOnCanvas < canvasBox.width / 2 ? -1 : 1;
+}
+
+function handleNativeTouch(event) {
+  event.preventDefault();
+
+  if (state !== "play") {
+    startGame();
+    return;
+  }
+
+  if (event.touches.length > 0) {
+    setTouchDirectionFromClientX(event.touches[0].clientX);
+  }
+}
+
+function handleNativeTouchEnd(event) {
+  event.preventDefault();
+  touchDirection = 0;
+}
+
+function handleNativePointer(event) {
+  if (event.pointerType !== "touch") return;
+  event.preventDefault();
+
+  if (state !== "play") {
+    startGame();
+    return;
+  }
+
+  setTouchDirectionFromClientX(event.clientX);
+}
+
+function handleNativePointerEnd(event) {
+  if (event.pointerType !== "touch") return;
+  event.preventDefault();
+  touchDirection = 0;
 }
 
 function touchStarted() {
