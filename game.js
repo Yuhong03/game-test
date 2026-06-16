@@ -12,7 +12,8 @@ let jupiterPlatforms = []; // gives a higher jump
 let score = 0;
 let winScore = 15000; // score needed to finish the game
 let state = "start"; // "start" | "play" | "over" | "win"
-let cissiImage = null;
+let touchDirection = 0; // -1 left, 1 right, 0 none
+let playerImage = null;
 let logoImage = null;
 let posterImage = null;
 let landImages = [];
@@ -20,7 +21,7 @@ let planetImages = {};
 
 // --- Subclasses (extend Platform) ---
 
-// Mars disappears and falls after Cissi lands on it
+// Mars disappears and falls after the player lands on it
 class MarsPlatform extends Platform {
   constructor(x, y, w, h, imageFile) {
     super(x, y, w, h, imageFile, [230, 85, 55]);
@@ -72,7 +73,7 @@ class JupiterPlatform extends Platform {
 
 function loadAssets() {
   loadImage("images/cissi.png", (img) => {
-    cissiImage = img;
+    playerImage = img;
     if (character1) character1.imageFile = img;
   }, () => {
     console.log("Could not load cissi.png");
@@ -124,7 +125,7 @@ function loadAssets() {
 function setup() {
   createCanvas(canvasWidth, canvasHeight);
   frameRate(60);
-  character1 = new Character(185, 450, 30, 30, cissiImage);
+  character1 = new Character(185, 450, 30, 30, playerImage);
   loadAssets();
 }
 
@@ -229,6 +230,7 @@ function runGame() {
   // set horizontal speed from keyboard (arrows or A/D)
   if (keyIsDown(LEFT_ARROW) || keyIsDown(65)) character1.vx = -4.5;
   else if (keyIsDown(RIGHT_ARROW) || keyIsDown(68)) character1.vx = 4.5;
+  else if (touchDirection !== 0) character1.vx = touchDirection * 4.5;
   else character1.vx = 0;
 
   // apply gravity and update position (in Character.move)
@@ -266,6 +268,7 @@ function runGame() {
   }
 
   character1.draw();
+  drawMobileControls();
 
   // camera scroll — player stays near scrollLine, world moves down
   if (character1.y < scrollLine) {
@@ -337,6 +340,20 @@ function drawLandCharacters() {
   }
 }
 
+// simple touch hints for mobile players
+function drawMobileControls() {
+  noStroke();
+  fill(255, 255, 255, 28);
+  ellipse(65, height - 58, 78, 78);
+  ellipse(width - 65, height - 58, 78, 78);
+
+  fill(255, 255, 255, 130);
+  textAlign(CENTER, CENTER);
+  textSize(24);
+  text("<", 65, height - 60);
+  text(">", width - 65, height - 60);
+}
+
 // recycle platforms that scrolled below the screen
 function respawnIfOffScreen() {
   for (let i = 0; i < moonPlatforms.length; i++) {
@@ -379,7 +396,7 @@ function refreshPlatformImages() {
 // set up a new game — clear arrays and spawn platforms
 function resetGame() {
   score = 0;
-  character1 = new Character(185, 450, 30, 30, cissiImage);
+  character1 = new Character(185, 450, 30, 30, playerImage);
   character1.jump(); // small bounce at start
 
   moonPlatforms = [];
@@ -428,15 +445,15 @@ function showStartScreen() {
   } else {
     fill(255);
     textSize(34);
-    text("Cissi jump game", width / 2, height / 2 - 105);
+  text("Planet Jump", width / 2, height / 2 - 105);
   }
   fill(255);
   textSize(26);
-  text("Cissi jump game", width / 2, height / 2 - 35);
+  text("Planet Jump", width / 2, height / 2 - 35);
   textSize(16);
   text("Moon = normal   Mars = falls   Jupiter = high jump", width / 2, height / 2 + 5);
   text("Reach 15000 points to escape the Empire", width / 2, height / 2 + 35);
-  text("Click or SPACE to start", width / 2, height / 2 + 75);
+  text("Click, tap, or SPACE to start", width / 2, height / 2 + 75);
 }
 
 // game over — draw scene then dark overlay
@@ -465,14 +482,14 @@ function showWinScreen() {
   rect(0, 0, width, height);
 
   drawSpaceship(width / 2, height / 2 + 35);
-  drawCissiOnShip(width / 2, height / 2 - 35);
+  drawPlayerOnShip(width / 2, height / 2 - 35);
 
   fill(255, 230, 80);
   textAlign(CENTER, CENTER);
   textSize(30);
   text("Mission Complete!", width / 2, height / 2 - 115);
   textSize(17);
-  text("Cissi reached the spaceship.", width / 2, height / 2 - 82);
+  text("The player reached the spaceship.", width / 2, height / 2 - 82);
   text("Final Score: " + score, width / 2, height / 2 + 105);
   text("Click or SPACE to play again", width / 2, height / 2 + 140);
 }
@@ -501,11 +518,11 @@ function drawSpaceship(x, y) {
   ellipse(x + 35, y + 8, 14, 14);
 }
 
-// place Cissi on top of the spaceship for the ending
-function drawCissiOnShip(x, y) {
-  if (cissiImage && cissiImage.width > 1) {
+// place the player on top of the spaceship for the ending
+function drawPlayerOnShip(x, y) {
+  if (playerImage && playerImage.width > 1) {
     imageMode(CENTER);
-    image(cissiImage, x, y, 58, 70);
+    image(playerImage, x, y, 58, 70);
   } else {
     fill(255, 220, 200);
     ellipse(x, y - 12, 28, 28);
@@ -517,6 +534,37 @@ function drawCissiOnShip(x, y) {
 function startGame() {
   state = "play";
   resetGame();
+}
+
+function updateTouchDirection() {
+  if (touches.length === 0) {
+    touchDirection = 0;
+    return;
+  }
+
+  touchDirection = touches[0].x < width / 2 ? -1 : 1;
+}
+
+function touchStarted() {
+  if (state !== "play") {
+    startGame();
+    return false;
+  }
+
+  updateTouchDirection();
+  return false;
+}
+
+function touchMoved() {
+  if (state === "play") {
+    updateTouchDirection();
+  }
+  return false;
+}
+
+function touchEnded() {
+  touchDirection = 0;
+  return false;
 }
 
 // space or enter to start / restart
@@ -538,3 +586,6 @@ window.setup = setup;
 window.draw = draw;
 window.keyPressed = keyPressed;
 window.mousePressed = mousePressed;
+window.touchStarted = touchStarted;
+window.touchMoved = touchMoved;
+window.touchEnded = touchEnded;
